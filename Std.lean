@@ -43,6 +43,7 @@ import Std.Data.RBMap.WF
 import Std.Data.Rat
 import Std.Data.Rat.Basic
 import Std.Data.Rat.Lemmas
+import Std.Data.IntScalars
 import Std.Data.String
 import Std.Lean.AttributeExtra
 import Std.Lean.Command
