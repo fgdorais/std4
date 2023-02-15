@@ -349,6 +349,10 @@ variable {p q : α → Prop} {b : Prop}
 theorem forall_imp (h : ∀ a, p a → q a) : (∀ a, p a) → ∀ a, q a :=
 fun h' a => h a (h' a)
 
+@[simp] theorem forall_exists_index {q : (∃ x, p x) → Prop} :
+    (∀ h, q h) ↔ ∀ x (h : p x), q ⟨x, h⟩ :=
+  ⟨fun h x hpx => h ⟨x, hpx⟩, fun h ⟨x, hpx⟩ => h x hpx⟩
+
 theorem Exists.imp (h : ∀ a, p a → q a) : (∃ a, p a) → ∃ a, q a
   | ⟨a, hp⟩ => ⟨a, h a hp⟩
 
@@ -356,8 +360,7 @@ theorem Exists.imp' {β} {q : β → Prop} (f : α → β) (hpq : ∀ a, p a →
     (∃ a, p a) → ∃ b, q b
   | ⟨_, hp⟩ => ⟨_, hpq _ hp⟩
 
-@[simp] theorem exists_imp : ((∃ x, p x) → b) ↔ ∀ x, p x → b :=
-  ⟨fun h x hpx => h ⟨x, hpx⟩, fun h ⟨x, hpx⟩ => h x hpx⟩
+theorem exists_imp : ((∃ x, p x) → b) ↔ ∀ x, p x → b := forall_exists_index
 
 section forall_congr
 
@@ -510,6 +513,10 @@ theorem decide_eq_true_iff (p : Prop) [Decidable p] : (decide p = true) ↔ p :=
 
 @[simp] theorem decide_eq_false_iff_not (p : Prop) [Decidable p] : (decide p = false) ↔ ¬p :=
   ⟨of_decide_eq_false, decide_eq_false⟩
+
+@[simp] theorem decide_eq_decide {p q : Prop} [Decidable p] [Decidable q] :
+    decide p = decide q ↔ (p ↔ q) :=
+  ⟨fun h => by rw [← decide_eq_true_iff p, h, decide_eq_true_iff], fun h => by simp [h]⟩
 
 theorem Decidable.of_not_imp [Decidable a] (h : ¬(a → b)) : a :=
   byContradiction (not_not_of_not_imp h)
