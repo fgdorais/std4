@@ -139,8 +139,8 @@ theorem le_succ_of_pred_le : ∀ {n m}, pred n ≤ m → n ≤ succ m
   | 0, _, _ => Nat.zero_le ..
   | _+1, _, h => Nat.succ_le_succ h
 
-theorem le_pred_of_lt (h : m < n) : m ≤ n - 1 :=
-  Nat.sub_le_sub_right h 1
+theorem le_pred_of_lt : ∀ {m n}, m < n → m ≤ pred n
+  | _, _+1, h => Nat.le_of_lt_succ h
 
 /-! ### add -/
 
