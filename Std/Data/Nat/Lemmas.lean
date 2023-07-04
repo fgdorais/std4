@@ -150,8 +150,7 @@ protected theorem eq_zero_of_add_eq_zero_right : ∀ {n m}, n + m = 0 → n = 0
 protected theorem eq_zero_of_add_eq_zero_left : ∀ {n m}, n + m = 0 → m = 0
   | _, 0, _ => rfl
 
--- ???
-theorem succ_add_eq_succ_add (n m : Nat) : succ n + m = n + succ m := by
+theorem succ_add_eq_add_succ (n m : Nat) : succ n + m = n + succ m := by
   simp [succ_add, add_succ]
 
 theorem one_add (n : Nat) : 1 + n = succ n := Nat.add_comm ..
@@ -185,8 +184,7 @@ protected theorem add_lt_add_iff_left (k n m : Nat) : k + n < k + m ↔ n < m :=
 protected theorem add_lt_add_iff_right (k n m : Nat) : n + k < m + k ↔ n < m :=
   ⟨Nat.lt_of_add_lt_add_right, fun h => Nat.add_lt_add_right h _⟩
 
--- fix args
-protected theorem lt_add_right (a b c : Nat) (h : a < b) : a < b + c :=
+protected theorem lt_add_right (k : Nat) {n m : Nat} (h : n < m) : n < m + k :=
   Nat.lt_of_lt_of_le h (Nat.le_add_right ..)
 
 protected theorem lt_add_of_pos_right (h : 0 < k) : n < n + k :=
@@ -232,12 +230,6 @@ protected theorem le_of_le_of_sub_le_sub_right : ∀ {n m k : Nat}, k ≤ m → 
 
 protected theorem sub_le_sub_iff_right {n m k : Nat} (h : k ≤ m) : n - k ≤ m - k ↔ n ≤ m :=
   ⟨Nat.le_of_le_of_sub_le_sub_right h, fun h => Nat.sub_le_sub_right h _⟩
-
-protected theorem add_le_to_le_sub (n : Nat) (h : m ≤ k) : n + m ≤ k ↔ n ≤ k - m := by
-  rw [← Nat.add_sub_cancel n, Nat.sub_le_sub_iff_right h, Nat.add_sub_cancel]
-
-protected theorem sub_lt_of_pos_le (h₀ : 0 < a) (h₁ : a ≤ b) : b - a < b :=
-  Nat.sub_lt (Nat.lt_of_lt_of_le h₀ h₁) h₀
 
 protected theorem sub_one (n) : n - 1 = pred n := rfl
 
@@ -295,7 +287,7 @@ theorem le_sub_iff_add_le {x y k : Nat} (h : k ≤ y) : x ≤ y - k ↔ x + k �
   rw [← Nat.add_sub_cancel x k, Nat.sub_le_sub_iff_right h, Nat.add_sub_cancel]
 
 protected theorem sub_le_iff_le_add {a b c : Nat} : a - b ≤ c ↔ a ≤ c + b :=
-  ⟨Nat.le_add_of_sub_le, sub_le_of_le_add⟩
+  ⟨Nat.le_add_of_sub_le, Nat.sub_le_of_le_add⟩
 
 protected theorem sub_le_iff_le_add' {a b c : Nat} : a - b ≤ c ↔ a ≤ b + c := by
   rw [Nat.sub_le_iff_le_add, Nat.add_comm]
