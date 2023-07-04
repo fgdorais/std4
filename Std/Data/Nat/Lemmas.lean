@@ -184,7 +184,7 @@ protected theorem add_lt_add_iff_left (k n m : Nat) : k + n < k + m ↔ n < m :=
 protected theorem add_lt_add_iff_right (k n m : Nat) : n + k < m + k ↔ n < m :=
   ⟨Nat.lt_of_add_lt_add_right, fun h => Nat.add_lt_add_right h _⟩
 
-protected theorem lt_add_right (k : Nat) {n m : Nat} (h : n < m) : n < m + k :=
+protected theorem lt_add_right (k : Nat) (h : n < m) : n < m + k :=
   Nat.lt_of_lt_of_le h (Nat.le_add_right ..)
 
 protected theorem lt_add_of_pos_right (h : 0 < k) : n < n + k :=
