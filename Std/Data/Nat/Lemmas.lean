@@ -649,7 +649,7 @@ theorem shiftLeft_eq' (a b : Nat) : a <<< b = 2 ^ b * a := by
 @[simp] theorem shiftLeft_eq (a b : Nat) : a <<< b = a * 2 ^ b := by
   rw [Nat.mul_comm, Nat.shiftLeft_eq']
 
-theorem one_shiftLeft (n) : 1 <<< n = 2 ^ n := by rw [shiftLeft_eq, Nat.one_mul]
+theorem one_shiftLeft (n) : 1 <<< n = 2 ^ n := by rw [Nat.shiftLeft_eq', Nat.mul_one]
 
 protected theorem zero_pow : ∀ n, 0 < n → 0 ^ n = 0
   | _+1, _ => rfl
