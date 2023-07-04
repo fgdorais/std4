@@ -150,10 +150,11 @@ protected theorem eq_zero_of_add_eq_zero_right : ∀ {n m}, n + m = 0 → n = 0
 protected theorem eq_zero_of_add_eq_zero_left : ∀ {n m}, n + m = 0 → m = 0
   | _, 0, _ => rfl
 
-theorem succ_add_eq_succ_add (n m) : succ n + m = n + succ m := by
+-- ???
+theorem succ_add_eq_succ_add (n m : Nat) : succ n + m = n + succ m := by
   simp [succ_add, add_succ]
 
-theorem one_add (n) : 1 + n = succ n := by simp [Nat.add_comm]
+theorem one_add (n : Nat) : 1 + n = succ n := Nat.add_comm ..
 
 theorem eq_zero_of_add_eq_zero (H : n + m = 0) : n = 0 ∧ m = 0 :=
   ⟨Nat.eq_zero_of_add_eq_zero_right H, Nat.eq_zero_of_add_eq_zero_left H⟩
@@ -184,6 +185,7 @@ protected theorem add_lt_add_iff_left (k n m : Nat) : k + n < k + m ↔ n < m :=
 protected theorem add_lt_add_iff_right (k n m : Nat) : n + k < m + k ↔ n < m :=
   ⟨Nat.lt_of_add_lt_add_right, fun h => Nat.add_lt_add_right h _⟩
 
+-- fix args
 protected theorem lt_add_right (a b c : Nat) (h : a < b) : a < b + c :=
   Nat.lt_of_lt_of_le h (Nat.le_add_right ..)
 
