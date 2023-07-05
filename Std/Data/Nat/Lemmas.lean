@@ -10,6 +10,25 @@ import Std.Data.Nat.Basic
 
 namespace Nat
 
+/-! ### rec/cases -/
+
+section
+variable {motive : Nat → Sort _} (zero : motive 0) (succ : ∀ n, motive n → motive (n+1))
+
+theorem recAux_zero : Nat.recAux zero succ 0 = zero := rfl
+
+theorem recAux_succ (n) : Nat.recAux zero succ (n+1) = succ n (Nat.recAux zero succ n) := rfl
+
+theorem recAuxOn_zero : Nat.recAuxOn 0 zero succ = zero := rfl
+
+theorem recAuxOn_succ (n) : Nat.recAuxOn (n+1) zero succ = succ n (Nat.recAuxOn n zero succ) := rfl
+
+theorem casesAux_zero (succ : ∀ n, motive (n+1)) : Nat.casesAuxOn 0 zero succ = zero := rfl
+
+theorem casesAux_succ (succ : ∀ n, motive (n+1)) (n) : Nat.casesAuxOn (n+1) zero succ = succ n := rfl
+
+end
+
 /-! ### le/lt -/
 
 theorem ne_of_gt {a b : Nat} (h : b < a) : a ≠ b := (ne_of_lt h).symm
