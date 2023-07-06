@@ -450,6 +450,9 @@ protected theorem mul_lt_mul (hac : a < c) (hbd : b ≤ d) (hd : 0 < d) : a * b 
 protected theorem mul_lt_mul' (hac : a ≤ c) (hbd : b < d) (hc : 0 < c) : a * b < c * d :=
   Nat.lt_of_le_of_lt (Nat.mul_le_mul_right' hac) (Nat.mul_lt_mul_of_pos_left hbd hc)
 
+protected theorem mul_lt_mul₀ {a b c d : Nat} (hac : a < c) (hbd : b < d) : a * b < c * d :=
+  Nat.mul_lt_mul' (Nat.le_of_lt hac) hbd (Nat.zero_lt_of_lt hac)
+
 theorem succ_mul_succ_eq (a b) : succ a * succ b = a * b + a + b + 1 := by
   rw [succ_mul, mul_succ]; rfl
 
