@@ -33,6 +33,19 @@ protected def casesAuxOn {motive : Nat → Sort _} (t : Nat) (zero : motive 0)
   (succ : ∀ n, motive (n+1)) : motive t := Nat.recAux zero (fun n _ => succ n) t
 
 /--
+  Simple diagonal recursor for `Nat`
+-/
+@[elab_as_elim]
+protected def recDiagAux {motive : Nat → Nat → Sort _}
+  (zero_left : ∀ n, motive 0 n)
+  (zero_right : ∀ m, motive m 0)
+  (succ_succ : ∀ m n, motive m n → motive (m+1) (n+1)) :
+    (m n : Nat) → motive m n
+  | 0, _ => zero_left _
+  | _, 0 => zero_right _
+  | _+1, _+1 => succ_succ _ _ (Nat.recDiagAux zero_left zero_right succ_succ _ _)
+
+/--
   Diagonal recursor for `Nat`
 -/
 @[elab_as_elim]
@@ -41,19 +54,16 @@ protected def recDiag {motive : Nat → Nat → Sort _}
   (zero_succ : ∀ n, motive 0 n → motive 0 (n+1))
   (succ_zero : ∀ m, motive m 0 → motive (m+1) 0)
   (succ_succ : ∀ m n, motive m n → motive (m+1) (n+1)) :
-    (m n : Nat) → motive m n
-  | 0, _ => right _
-  | _, 0 => left _
-  | _+1, _+1 => succ_succ _ _ (Nat.recDiag zero_zero zero_succ succ_zero succ_succ _ _)
+    (m n : Nat) → motive m n := Nat.recDiagAux left right succ_succ
 where
-  /-- Right leg for `Nat.recDiag` -/
-  right : ∀ n, motive 0 n
-  | 0 => zero_zero
-  | _+1 => zero_succ _ (right _)
   /-- Left leg for `Nat.recDiag` -/
-  left : ∀ m, motive m 0
+  left : ∀ n, motive 0 n
   | 0 => zero_zero
-  | _+1 => succ_zero _ (left _)
+  | _+1 => zero_succ _ (left _)
+  /-- Right leg for `Nat.recDiag` -/
+  right : ∀ m, motive m 0
+  | 0 => zero_zero
+  | _+1 => succ_zero _ (right _)
 
 /--
   Diagonal recursor for `Nat`
