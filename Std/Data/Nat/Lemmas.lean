@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2016 Microsoft Corporation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Leonardo de Moura, Jeremy Avigad, Mario Carneiro
+Authors: Leonardo de Moura, Jeremy Avigad, Mario Carneiro, F. G. Dorais
 -/
 import Std.Logic
 import Std.Tactic.Basic
@@ -357,9 +357,11 @@ protected theorem sub_eq_iff_eq_add {a b c : Nat} (h : b ≤ a) : a - b = c ↔ 
 protected theorem lt_of_sub_eq_succ (H : m - n = succ l) : n < m :=
   Nat.not_le.1 fun H' => by simp [Nat.sub_eq_zero_of_le H'] at H
 
-protected theorem sub_le_sub_left (k : Nat) (h : n ≤ m) : k - m ≤ k - n :=
-  match m, le.dest h with
-  | _, ⟨a, rfl⟩ => by rw [← Nat.sub_sub]; apply sub_le
+protected theorem sub_le_sub_left : ∀ (k : Nat) {n m}, n ≤ m → k - m ≤ k - n
+  | 0, _, _, _ => by simp only [Nat.zero_sub]
+  | _, 0, _, _ => Nat.sub_le ..
+  | _+1, _+1, _+1, h => by
+    simp only [Nat.succ_sub_succ]; exact Nat.sub_le_sub_left _ (Nat.le_of_succ_le_succ h)
 
 theorem succ_sub_sub_succ (n m k) : succ n - m - succ k = n - m - k := by
   rw [Nat.sub_sub, Nat.sub_sub, add_succ, succ_sub_succ]
@@ -523,11 +525,13 @@ protected theorem min_max_distrib_left : ∀ (a b c : Nat), min a (max b c) = ma
     simp only [Nat.max_succ_succ, Nat.min_succ_succ]
     exact congrArg succ <| Nat.min_max_distrib_left ..
 
-protected theorem max_min_distrib_right (a b c : Nat) : max (min a b) c = min (max a c) (max b c) := by
+protected theorem max_min_distrib_right (a b c : Nat) :
+    max (min a b) c = min (max a c) (max b c) := by
   repeat rw [Nat.max_comm _ c]
   exact Nat.max_min_distrib_left ..
 
-protected theorem min_max_distrib_right (a b c : Nat) : min (max a b) c = max (min a c) (min b c) := by
+protected theorem min_max_distrib_right (a b c : Nat) :
+    min (max a b) c = max (min a c) (min b c) := by
   repeat rw [Nat.min_comm _ c]
   exact Nat.min_max_distrib_left ..
 
