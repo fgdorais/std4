@@ -15,17 +15,17 @@ namespace Nat
 section
 variable {motive : Nat → Sort _} (zero : motive 0) (succ : ∀ n, motive n → motive (n+1))
 
-theorem recAux_zero : Nat.recAux zero succ 0 = zero := rfl
+@[simp] theorem recAux_zero : Nat.recAux zero succ 0 = zero := rfl
 
 theorem recAux_succ (n) : Nat.recAux zero succ (n+1) = succ n (Nat.recAux zero succ n) := rfl
 
-theorem recAuxOn_zero : Nat.recAuxOn 0 zero succ = zero := rfl
+@[simp] theorem recAuxOn_zero : Nat.recAuxOn 0 zero succ = zero := rfl
 
 theorem recAuxOn_succ (n) : Nat.recAuxOn (n+1) zero succ = succ n (Nat.recAuxOn n zero succ) := rfl
 
-theorem casesAux_zero (succ : ∀ n, motive (n+1)) : Nat.casesAuxOn 0 zero succ = zero := rfl
+@[simp] theorem casesAuxOn_zero (succ : ∀ n, motive (n+1)) : Nat.casesAuxOn 0 zero succ = zero := rfl
 
-theorem casesAux_succ (succ : ∀ n, motive (n+1)) (n) : Nat.casesAuxOn (n+1) zero succ = succ n := rfl
+theorem casesAuxOn_succ (succ : ∀ n, motive (n+1)) (n) : Nat.casesAuxOn (n+1) zero succ = succ n := rfl
 
 end
 
@@ -122,7 +122,7 @@ theorem succ_le : succ n ≤ m ↔ n < m := .rfl
 theorem lt_succ : m < succ n ↔ m ≤ n :=
   ⟨le_of_lt_succ, lt_succ_of_le⟩
 
-theorem lt_succ_of_lt (h : a < b) : a < succ b := le_succ_of_le h
+theorem lt_succ_of_lt : m < n → m < succ n := le_succ_of_le
 
 theorem succ_ne_self : ∀ n, succ n ≠ n
   | _+1, h => succ_ne_self _ (succ.inj h)
@@ -142,16 +142,16 @@ theorem succ_eq_one_add (n) : succ n = 1 + n := Nat.add_comm _ 1
 theorem succ_inj' : succ n = succ m ↔ n = m :=
   ⟨succ.inj, congrArg _⟩
 
-theorem pred_inj : ∀ {a b}, 0 < a → 0 < b → pred a = pred b → a = b
+theorem pred_inj : ∀ {n m}, 0 < n → 0 < m → pred n = pred m → n = m
   | _+1, _+1, _, _ => congrArg _
 
 theorem pred_lt_pred : ∀ {n m}, n ≠ 0 → n < m → pred n < pred m
   | _+1, _+1, _, h => lt_of_succ_lt_succ h
 
-theorem succ_le_succ_iff : succ a ≤ succ b ↔ a ≤ b :=
+theorem succ_le_succ_iff : succ m ≤ succ n ↔ m ≤ n :=
   ⟨le_of_succ_le_succ, succ_le_succ⟩
 
-theorem succ_lt_succ_iff : succ a < succ b ↔ a < b :=
+theorem succ_lt_succ_iff : succ m < succ n ↔ m < n :=
   ⟨lt_of_succ_lt_succ, succ_lt_succ⟩
 
 theorem le_succ_of_pred_le : ∀ {n m}, pred n ≤ m → n ≤ succ m
@@ -169,10 +169,9 @@ protected theorem eq_zero_of_add_eq_zero_right : ∀ {n m}, n + m = 0 → n = 0
 protected theorem eq_zero_of_add_eq_zero_left : ∀ {n m}, n + m = 0 → m = 0
   | _, 0, _ => rfl
 
-theorem succ_add_eq_add_succ (n m : Nat) : succ n + m = n + succ m := by
-  simp [succ_add, add_succ]
+theorem succ_add_eq_add_succ (n m) : succ n + m = n + succ m := Nat.succ_add ..
 
-theorem one_add (n : Nat) : 1 + n = succ n := Nat.add_comm ..
+theorem one_add (n) : 1 + n = succ n := Nat.add_comm ..
 
 theorem eq_zero_of_add_eq_zero (H : n + m = 0) : n = 0 ∧ m = 0 :=
   ⟨Nat.eq_zero_of_add_eq_zero_right H, Nat.eq_zero_of_add_eq_zero_left H⟩
@@ -440,18 +439,14 @@ protected theorem le_mul_of_pos_left (n) (h : 0 < m) : n ≤ n * m :=
 protected theorem le_mul_of_pos_right (m) (h : 0 < n) : m ≤ n * m :=
   Nat.le_trans (Nat.le_of_eq (Nat.one_mul _).symm) (Nat.mul_le_mul_right _ h)
 
-protected theorem mul_le_mul_left' {a b c : Nat} : a ≤ b → c * a ≤ c * b := Nat.mul_le_mul_left _
+protected theorem mul_lt_mul_of_lt_of_le (hac : a < c) (hbd : b ≤ d) (hd : 0 < d) : a * b < c * d :=
+  Nat.lt_of_le_of_lt (Nat.mul_le_mul_left _ hbd) (Nat.mul_lt_mul_of_pos_right hac hd)
 
-protected theorem mul_le_mul_right' {a b c : Nat} : a ≤ b → a * c ≤ b * c := Nat.mul_le_mul_right _
-
-protected theorem mul_lt_mul (hac : a < c) (hbd : b ≤ d) (hd : 0 < d) : a * b < c * d :=
-  Nat.lt_of_le_of_lt (Nat.mul_le_mul_left' hbd) (Nat.mul_lt_mul_of_pos_right hac hd)
-
-protected theorem mul_lt_mul' (hac : a ≤ c) (hbd : b < d) (hc : 0 < c) : a * b < c * d :=
-  Nat.lt_of_le_of_lt (Nat.mul_le_mul_right' hac) (Nat.mul_lt_mul_of_pos_left hbd hc)
+protected theorem mul_lt_mul_of_le_of_lt (hac : a ≤ c) (hbd : b < d) (hc : 0 < c) : a * b < c * d :=
+  Nat.lt_of_le_of_lt (Nat.mul_le_mul_right _ hac) (Nat.mul_lt_mul_of_pos_left hbd hc)
 
 protected theorem mul_lt_mul₀ {a b c d : Nat} (hac : a < c) (hbd : b < d) : a * b < c * d :=
-  Nat.mul_lt_mul' (Nat.le_of_lt hac) hbd (Nat.zero_lt_of_lt hac)
+  Nat.mul_lt_mul_of_le_of_lt (Nat.le_of_lt hac) hbd (Nat.zero_lt_of_lt hac)
 
 theorem succ_mul_succ_eq (a b) : succ a * succ b = a * b + a + b + 1 := by
   rw [succ_mul, mul_succ]; rfl
@@ -869,3 +864,41 @@ protected theorem dvd_of_mul_dvd_mul_right : 0 < k → m * k ∣ n * k → m ∣
 
 @[simp] theorem sum_append : Nat.sum (l₁ ++ l₂) = Nat.sum l₁ + Nat.sum l₂ := by
   induction l₁ <;> simp [*, Nat.add_assoc]
+
+/-! ### deprecated -/
+
+@[deprecated Nat.le_sub_iff_add_le]
+theorem add_le_to_le_sub (x : Nat) {y k : Nat} (h : k ≤ y) : x + k ≤ y ↔ x ≤ y - k :=
+  (Nat.le_sub_iff_add_le h).symm
+
+@[deprecated Nat.succ_add_eq_add_succ]
+theorem succ_add_eq_succ_add (n m : Nat) : succ n + m = n + succ m :=
+  Nat.succ_add_eq_add_succ ..
+
+@[deprecated Nat.mul_le_mul_left]
+protected theorem mul_le_mul_of_nonneg_left {a b c : Nat} : a ≤ b → c * a ≤ c * b :=
+  Nat.mul_le_mul_left c
+
+@[deprecated Nat.mul_le_mul_right]
+protected theorem mul_le_mul_of_nonneg_right {a b c : Nat} : a ≤ b → a * c ≤ b * c :=
+  Nat.mul_le_mul_right c
+
+@[deprecated Nat.mul_lt_mul_of_lt_of_le]
+protected theorem mul_lt_mul (hac : a < c) (hbd : b ≤ d) (hb : 0 < b) : a * b < c * d :=
+  Nat.mul_lt_mul_of_lt_of_le hac hbd (Nat.lt_of_lt_of_le hb hbd)
+
+@[deprecated Nat.mul_lt_mul_of_le_of_lt]
+protected theorem mul_lt_mul' (hac : a ≤ c) (hbd : b < d) (hc : 0 < c) : a * b < c * d :=
+  Nat.mul_lt_mul_of_le_of_lt hac hbd hc
+
+@[deprecated Nat.max_zero_left]
+protected theorem zero_max (n) : max 0 n = n := Nat.max_zero_left ..
+
+@[deprecated Nat.max_zero_right]
+protected theorem max_zero (n) : max n 0 = n := Nat.max_zero_right ..
+
+@[deprecated Nat.min_zero_left]
+protected theorem zero_min (n) : min 0 n = 0 := Nat.min_zero_left ..
+
+@[deprecated Nat.max_zero_right]
+protected theorem min_zero (n) : min n 0 = 0 := Nat.min_zero_right ..
