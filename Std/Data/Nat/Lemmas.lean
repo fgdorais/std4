@@ -547,6 +547,36 @@ protected theorem min_add_add_left (a b c : Nat) : min (a + b) (a + c) = a + min
   repeat rw [Nat.add_comm a]
   exact Nat.min_add_add_right ..
 
+protected theorem min_pred_pred : ∀ (x y), min (pred x) (pred y) = pred (min x y)
+  | 0, _ => by simp only [Nat.pred_zero, Nat.min_zero_left]
+  | _, 0 => by simp only [Nat.pred_zero, Nat.min_zero_right]
+  | _+1, _+1 => by simp only [Nat.pred_succ, Nat.min_succ_succ]
+
+protected theorem max_pred_pred : ∀ (x y), max (pred x) (pred y) = pred (max x y)
+  | 0, _ => by simp only [Nat.pred_zero, Nat.max_zero_left]
+  | _, 0 => by simp only [Nat.pred_zero, Nat.max_zero_right]
+  | _+1, _+1 => by simp only [Nat.pred_succ, Nat.max_succ_succ]
+
+protected theorem min_sub_sub_right : ∀ (a b c : Nat), min (a - c) (b - c) = min a b - c
+  | _, _, 0 => rfl
+  | _, _, _+1 => Eq.trans (Nat.min_pred_pred ..) <| congrArg _ (Nat.min_sub_sub_right ..)
+
+protected theorem max_sub_sub_right : ∀ (a b c : Nat), max (a - c) (b - c) = max a b - c
+  | _, _, 0 => rfl
+  | _, _, _+1 => Eq.trans (Nat.max_pred_pred ..) <| congrArg _ (Nat.max_sub_sub_right ..)
+
+protected theorem min_sub_sub_left (a b c : Nat) : min (a - b) (a - c) = a - max b c := by
+  induction b, c using Nat.recDiagAux with
+  | zero_left => rw [Nat.sub_zero, Nat.max_zero_left]; exact Nat.min_eq_right (Nat.sub_le ..)
+  | zero_right => rw [Nat.sub_zero, Nat.max_zero_right]; exact Nat.min_eq_left (Nat.sub_le ..)
+  | succ_succ _ _ ih => simp only [Nat.sub_succ, Nat.max_succ_succ, Nat.min_pred_pred, ih]
+
+protected theorem max_sub_sub_left (a b c : Nat) : max (a - b) (a - c) = a - min b c := by
+  induction b, c using Nat.recDiagAux with
+  | zero_left => rw [Nat.sub_zero, Nat.min_zero_left]; exact Nat.max_eq_left (Nat.sub_le ..)
+  | zero_right => rw [Nat.sub_zero, Nat.min_zero_right]; exact Nat.max_eq_right (Nat.sub_le ..)
+  | succ_succ _ _ ih => simp only [Nat.sub_succ, Nat.min_succ_succ, Nat.max_pred_pred, ih]
+
 protected theorem max_mul_mul_right (a b c : Nat) : max (a * c) (b * c) = max a b * c := by
   induction a, b using Nat.recDiagAux with
   | zero_left => simp only [Nat.zero_mul, Nat.max_zero_left]
