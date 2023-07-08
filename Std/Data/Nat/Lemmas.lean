@@ -139,11 +139,16 @@ theorem exists_eq_succ_of_ne_zero : ∀ {n}, n ≠ 0 → ∃ k, n = succ k
 
 theorem succ_eq_one_add (n) : succ n = 1 + n := Nat.add_comm _ 1
 
+theorem succ_inj : succ n = succ m → n = m := succ.inj
+
 theorem succ_inj' : succ n = succ m ↔ n = m :=
   ⟨succ.inj, congrArg _⟩
 
 theorem pred_inj : ∀ {n m}, 0 < n → 0 < m → pred n = pred m → n = m
   | _+1, _+1, _, _ => congrArg _
+
+theorem pred_inj' (hn : 0 < n) (hm : 0 < m) : pred n = pred m ↔ n = m :=
+  ⟨pred_inj hn hm, congrArg _⟩
 
 theorem pred_lt_pred : ∀ {n m}, n ≠ 0 → n < m → pred n < pred m
   | _+1, _+1, _, h => lt_of_succ_lt_succ h
@@ -158,20 +163,30 @@ theorem le_succ_of_pred_le : ∀ {n m}, pred n ≤ m → n ≤ succ m
   | 0, _, _ => Nat.zero_le ..
   | _+1, _, h => Nat.succ_le_succ h
 
+theorem pred_le_of_le_succ : ∀ {n m}, n ≤ succ m → pred n ≤ m
+  | 0, _, _ => Nat.zero_le _
+  | _+1, _, h => Nat.le_of_succ_le_succ h
+
+theorem pred_le_iff_le_succ : pred n ≤ m ↔ n ≤ succ m :=
+  ⟨le_succ_of_pred_le, pred_le_of_le_succ⟩
+
 theorem le_pred_of_lt : ∀ {m n}, m < n → m ≤ pred n
   | _, _+1, h => Nat.le_of_lt_succ h
 
 /-! ### add -/
+
+protected theorem add_add_add_comm (a b c d : Nat) : (a + b) + (c + d) = (a + c) + (b + d) := by
+  rw [Nat.add_assoc, Nat.add_assoc, Nat.add_left_comm b]
+
+theorem succ_add_eq_add_succ (n m) : succ n + m = n + succ m := Nat.succ_add ..
+
+theorem one_add (n) : 1 + n = succ n := Nat.add_comm ..
 
 protected theorem eq_zero_of_add_eq_zero_right : ∀ {n m}, n + m = 0 → n = 0
   | _, 0, h => h
 
 protected theorem eq_zero_of_add_eq_zero_left : ∀ {n m}, n + m = 0 → m = 0
   | _, 0, _ => rfl
-
-theorem succ_add_eq_add_succ (n m) : succ n + m = n + succ m := Nat.succ_add ..
-
-theorem one_add (n) : 1 + n = succ n := Nat.add_comm ..
 
 theorem eq_zero_of_add_eq_zero (H : n + m = 0) : n = 0 ∧ m = 0 :=
   ⟨Nat.eq_zero_of_add_eq_zero_right H, Nat.eq_zero_of_add_eq_zero_left H⟩
