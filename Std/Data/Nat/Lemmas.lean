@@ -215,12 +215,10 @@ theorem exists_eq_succ_of_ne_zero : ∀ {n}, n ≠ 0 → ∃ k, n = succ k
 
 theorem succ_eq_one_add (n) : succ n = 1 + n := Nat.add_comm _ 1
 
-theorem succ_inj : succ n = succ m → n = m := succ.inj
-
 theorem succ_inj' : succ n = succ m ↔ n = m :=
   ⟨succ.inj, congrArg _⟩
 
-theorem pred_inj : ∀ {n m}, 0 < n → 0 < m → pred n = pred m → n = m
+theorem pred_inj : ∀ {a b}, 0 < a → 0 < b → pred a = pred b → a = b
   | _+1, _+1, _, _ => congrArg _
 
 theorem pred_inj' (hn : 0 < n) (hm : 0 < m) : pred n = pred m ↔ n = m :=
@@ -229,10 +227,10 @@ theorem pred_inj' (hn : 0 < n) (hm : 0 < m) : pred n = pred m ↔ n = m :=
 theorem pred_lt_pred : ∀ {n m}, n ≠ 0 → n < m → pred n < pred m
   | _+1, _+1, _, h => lt_of_succ_lt_succ h
 
-theorem succ_le_succ_iff : succ m ≤ succ n ↔ m ≤ n :=
+theorem succ_le_succ_iff : succ a ≤ succ b ↔ a ≤ b :=
   ⟨le_of_succ_le_succ, succ_le_succ⟩
 
-theorem succ_lt_succ_iff : succ m < succ n ↔ m < n :=
+theorem succ_lt_succ_iff : succ a < succ b ↔ a < b :=
   ⟨lt_of_succ_lt_succ, succ_lt_succ⟩
 
 theorem le_succ_of_pred_le : ∀ {n m}, pred n ≤ m → n ≤ succ m
@@ -246,7 +244,7 @@ theorem pred_le_of_le_succ : ∀ {n m}, n ≤ succ m → pred n ≤ m
 theorem pred_le_iff_le_succ : pred n ≤ m ↔ n ≤ succ m :=
   ⟨le_succ_of_pred_le, pred_le_of_le_succ⟩
 
-theorem le_pred_of_lt : ∀ {m n}, m < n → m ≤ pred n
+theorem le_pred_of_lt : ∀ {m n}, m < n → m ≤ n - 1
   | _, _+1, h => Nat.le_of_lt_succ h
 
 /-! ### add -/
@@ -357,11 +355,9 @@ protected theorem sub_eq_iff_eq_add {a b c : Nat} (h : b ≤ a) : a - b = c ↔ 
 protected theorem lt_of_sub_eq_succ (H : m - n = succ l) : n < m :=
   Nat.not_le.1 fun H' => by simp [Nat.sub_eq_zero_of_le H'] at H
 
-protected theorem sub_le_sub_left : ∀ (k : Nat) {n m}, n ≤ m → k - m ≤ k - n
-  | 0, _, _, _ => by simp only [Nat.zero_sub]
-  | _, 0, _, _ => Nat.sub_le ..
-  | _+1, _+1, _+1, h => by
-    simp only [Nat.succ_sub_succ]; exact Nat.sub_le_sub_left _ (Nat.le_of_succ_le_succ h)
+protected theorem sub_le_sub_left (k : Nat) (h : n ≤ m) : k - m ≤ k - n :=
+  match m, le.dest h with
+  | _, ⟨a, rfl⟩ => by rw [← Nat.sub_sub]; exact sub_le ..
 
 theorem succ_sub_sub_succ (n m k) : succ n - m - succ k = n - m - k := by
   rw [Nat.sub_sub, Nat.sub_sub, add_succ, succ_sub_succ]
@@ -398,7 +394,7 @@ theorem le_sub_iff_add_le {x y k : Nat} (h : k ≤ y) : x ≤ y - k ↔ x + k �
   rw [← Nat.add_sub_cancel x k, Nat.sub_le_sub_iff_right h, Nat.add_sub_cancel]
 
 protected theorem sub_le_iff_le_add {a b c : Nat} : a - b ≤ c ↔ a ≤ c + b :=
-  ⟨Nat.le_add_of_sub_le, Nat.sub_le_of_le_add⟩
+  ⟨le_add_of_sub_le, sub_le_of_le_add⟩
 
 protected theorem sub_le_iff_le_add' {a b c : Nat} : a - b ≤ c ↔ a ≤ b + c := by
   rw [Nat.sub_le_iff_le_add, Nat.add_comm]
@@ -493,12 +489,10 @@ protected theorem max_assoc : ∀ (a b c : Nat), max (max a b) c = max a (max b 
 | _, _, 0 => by rw [Nat.max_zero_right, Nat.max_zero_right]
 | _+1, _+1, _+1 => by simp only [Nat.max_succ_succ]; exact congrArg succ <| Nat.max_assoc ..
 
-protected theorem sub_add_eq_max : ∀ (a b : Nat), a - b + b = max a b
-  | 0, _ => by rw [Nat.zero_sub, Nat.zero_add, Nat.max_zero_left]
-  | _, 0 => by rw [Nat.max_zero_right]; rfl
-  | _+1, _+1 => by
-    rw [Nat.succ_sub_succ, Nat.max_succ_succ]
-    exact congrArg succ <| Nat.sub_add_eq_max ..
+protected theorem sub_add_eq_max (a b : Nat) : a - b + b = max a b := by
+  match Nat.le_total a b with
+  | .inl hl => rw [Nat.max_eq_right hl, Nat.sub_eq_zero_iff_le.mpr hl, Nat.zero_add]
+  | .inr hr => rw [Nat.max_eq_left hr, Nat.sub_add_cancel hr]
 
 protected theorem sub_eq_max_sub (n m : Nat) : n - m = max n m - m := by
   rw [Nat.max_def]; split

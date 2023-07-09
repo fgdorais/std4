@@ -7,8 +7,6 @@ import Std.Classes.Dvd
 
 namespace Nat
 
-#print Nat.recOn
-
 /--
   Recursor identical to `Nat.rec` but uses notations `0` for `Nat.zero` and `·+1` for `Nat.succ`
 -/
