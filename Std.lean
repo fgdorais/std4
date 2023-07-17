@@ -43,7 +43,7 @@ import Std.Data.Option.Init.Lemmas
 import Std.Data.Option.Lemmas
 import Std.Data.Ord
 import Std.Data.PairingHeap
-import Std.Data.Pos.Basic
+import Std.Data.PNat.Basic
 import Std.Data.Prod.Lex
 import Std.Data.RBMap
 import Std.Data.RBMap.Alter

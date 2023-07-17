@@ -2,64 +2,64 @@ import Std.Tactic.Ext
 import Std.Data.Nat.Lemmas
 
 /-- Positive integer type -/
-@[ext] structure Pos where
-  /-- Coercion from `Pos` to `Nat` -/
+@[ext] structure PNat where
+  /-- Coercion from `PNat` to `Nat` -/
   protected toNat : Nat
   /-- Positive integers are nonzero -/
   ne_zero : toNat ≠ 0
 
-namespace Pos
+namespace PNat
 
-theorem zero_lt (x : Pos) : 0 < x.toNat := Nat.zero_lt_of_ne_zero x.ne_zero
+theorem zero_lt (x : PNat) : 0 < x.toNat := Nat.zero_lt_of_ne_zero x.ne_zero
 
-instance : OfNat Pos (nat_lit 1) := ⟨1, Nat.noConfusion⟩
-instance : OfNat Pos (nat_lit 2) := ⟨2, Nat.noConfusion⟩
-instance : OfNat Pos (n+1) := ⟨n+1, Nat.noConfusion⟩
+instance : OfNat PNat (nat_lit 1) := ⟨1, Nat.noConfusion⟩
+instance : OfNat PNat (nat_lit 2) := ⟨2, Nat.noConfusion⟩
+instance : OfNat PNat (n+1) := ⟨n+1, Nat.noConfusion⟩
 
-@[simp] theorem toNat_one : Pos.toNat 1 = 1 := rfl
-@[simp] theorem toNat_two : Pos.toNat 2 = 2 := rfl
-@[simp] theorem toNat_ofNat_succ (x : Nat) : Pos.toNat (OfNat.ofNat (x+1)) = x+1 := rfl
+@[simp] theorem toNat_one : PNat.toNat 1 = 1 := rfl
+@[simp] theorem toNat_two : PNat.toNat 2 = 2 := rfl
+@[simp] theorem toNat_ofNat_succ (x : Nat) : PNat.toNat (OfNat.ofNat (x+1)) = x+1 := rfl
 
 /-- Addition of positive integers -/
-protected def add : Pos → Pos → Pos
+protected def add : PNat → PNat → PNat
   | ⟨x+1,_⟩, ⟨y+1,_⟩ => ⟨(x+1)+(y+1), Nat.noConfusion⟩
-instance : Add Pos := ⟨Pos.add⟩
+instance : Add PNat := ⟨PNat.add⟩
 
-@[local simp] theorem toNat_add : ∀ (x y : Pos), (x + y).toNat = x.toNat + y.toNat
+@[local simp] theorem toNat_add : ∀ (x y : PNat), (x + y).toNat = x.toNat + y.toNat
   | ⟨_+1,_⟩, ⟨_+1,_⟩ => rfl
 
 /-- Partial subtraction of positive integers -/
-protected def sub? (x y : Pos) : Option Pos :=
+protected def sub? (x y : PNat) : Option PNat :=
   match x.toNat - y.toNat with
   | 0 => none
   | r+1 => some ⟨r+1, Nat.noConfusion⟩
 
-theorem toNat_sub? (x y : Pos) : (Pos.sub? x y).rec 0 Pos.toNat = x.toNat - y.toNat := by
-  unfold Pos.sub?; split <;> next h => rw [h]
+theorem toNat_sub? (x y : PNat) : (PNat.sub? x y).rec 0 PNat.toNat = x.toNat - y.toNat := by
+  unfold PNat.sub?; split <;> next h => rw [h]
 
 /-- Multiplication of positive integers -/
-protected def mul : Pos → Pos → Pos
+protected def mul : PNat → PNat → PNat
   | ⟨x+1,_⟩, ⟨y+1,_⟩ => ⟨(x+1)*(y+1), Nat.noConfusion⟩
-instance : Mul Pos := ⟨Pos.mul⟩
+instance : Mul PNat := ⟨PNat.mul⟩
 
-@[local simp] theorem toNat_mul : ∀ (x y : Pos), (x * y).toNat = x.toNat * y.toNat
+@[local simp] theorem toNat_mul : ∀ (x y : PNat), (x * y).toNat = x.toNat * y.toNat
   | ⟨_+1,_⟩, ⟨_+1,_⟩ => rfl
 
 /-- Exponentiation of positive integers -/
-@[local simp] protected def pow (x : Pos) (y : Nat) : Pos :=
+@[local simp] protected def pow (x : PNat) (y : Nat) : PNat :=
   ⟨x.toNat ^ y, Nat.not_eq_zero_of_lt (Nat.pos_pow_of_pos _ x.zero_lt)⟩
 
-instance : HPow Pos Nat Pos := ⟨Pos.pow⟩
+instance : HPow PNat Nat PNat := ⟨PNat.pow⟩
 
-theorem toNat_pow (x : Pos) (y : Nat) : (x ^ y).toNat = x.toNat ^ y := rfl
+theorem toNat_pow (x : PNat) (y : Nat) : (x ^ y).toNat = x.toNat ^ y := rfl
 
 /-! ## Successor View
 
 The _successor view_ of a positive integer corresponds to the alternate inductive definition:
 ```
-inductive Pos
-| one : Pos
-| succ : Pos → Pos
+inductive PNat
+| one : PNat
+| succ : PNat → PNat
 ```
 where `one` represents `1` and `succ` represents the function `fun x => x+1`.
 -/
@@ -67,15 +67,15 @@ where `one` represents `1` and `succ` represents the function `fun x => x+1`.
 /-- Inductive type for successor view of positive intgers -/
 inductive IndView
   | /-- Case `1` -/ one
-  | /-- Case `x+1` -/ succ (x : Pos)
+  | /-- Case `x+1` -/ succ (x : PNat)
 
 /-- Return the successor view of a positive integer -/
-@[inline] def toIndView : Pos → IndView
+@[inline] def toIndView : PNat → IndView
   | ⟨1, _⟩ => .one
   | ⟨x+2, _⟩ => .succ ⟨x+1, Nat.noConfusion⟩
 
 /-- Return the positive integer represented by a successor view -/
-@[inline] def ofIndView : IndView → Pos
+@[inline] def ofIndView : IndView → PNat
   | .one => 1
   | .succ ⟨x, _⟩ => ⟨x+1, Nat.noConfusion⟩
 
@@ -99,7 +99,7 @@ theorem toIndView_eq_iff_ofIndView_eq : toIndView x = y ↔ ofIndView y = x := b
 Using the successor view for recursive definitions currently requires some helper lemmas to help
 with termination proofs. The basic shape of a recursive definition using successor view is this:
 ```
-def foo (x : Pos) : Widget :=
+def foo (x : PNat) : Widget :=
   match h : x.toIndView with
   | .one =>
     ...
@@ -112,7 +112,7 @@ elements.
 -/
 namespace IndView
 
-theorem succ_helper {x y : Pos} : y.toIndView = .succ x → sizeOf x < sizeOf y := by
+theorem succ_helper {x y : PNat} : y.toIndView = .succ x → sizeOf x < sizeOf y := by
   intro h
   simp [toIndView] at h
   split at h
@@ -126,26 +126,26 @@ end IndView
 The successor view can also be used in proofs using the `induction` and `cases` tactics using
 custom recursors. The basic syntax for these are
 ```
-theorem foo (x : Pos) : ... := by
-  induction x using Pos.recInd with
+theorem foo (x : PNat) : ... := by
+  induction x using PNat.recInd with
   | one => ...
   | succ x ih => ...
 ```
 and
 ```
-theorem bar (x : Pos) : ... := by
-  cases x using Pos.casesInd with
+theorem bar (x : PNat) : ... := by
+  cases x using PNat.casesInd with
   | one => ...
   | succ x => ...
 ```
 -/
 section
-variable {motive : Pos → Sort _} (one : motive 1)
-  (succ : (x : Pos) → motive x → motive (x+1))
+variable {motive : PNat → Sort _} (one : motive 1)
+  (succ : (x : PNat) → motive x → motive (x+1))
 
 /-- Recursor for successor view of positive integers -/
 @[specialize, elab_as_elim]
-protected def recInd (t : Pos) : motive t :=
+protected def recInd (t : PNat) : motive t :=
   match h : t.toIndView with
   | .one =>
     have : t = 1 := by
@@ -156,23 +156,23 @@ protected def recInd (t : Pos) : motive t :=
     have := IndView.succ_helper h
     have : t = x + 1 := by
       rw [toIndView_eq_iff_ofIndView_eq] at h
-      rw [←h, ofIndView, Pos.ext_iff, toNat_add, toNat_one]
-    this ▸ succ _ (Pos.recInd x)
+      rw [←h, ofIndView, PNat.ext_iff, toNat_add, toNat_one]
+    this ▸ succ _ (PNat.recInd x)
 
-@[simp] theorem recInd_one : Pos.recInd one succ 1 = one := rfl
+@[simp] theorem recInd_one : PNat.recInd one succ 1 = one := rfl
 
-theorem recInd_succ (x) : Pos.recInd one succ (x+1) = succ x (Pos.recInd one succ x) := by
+theorem recInd_succ (x) : PNat.recInd one succ (x+1) = succ x (PNat.recInd one succ x) := by
   have heq : toIndView (x+1) = .succ x := by
-    simp [toIndView_eq_iff_ofIndView_eq, ofIndView, Pos.ext_iff]
-  rw [Pos.recInd]; split
+    simp [toIndView_eq_iff_ofIndView_eq, ofIndView, PNat.ext_iff]
+  rw [PNat.recInd]; split
   next h => rw [heq] at h; contradiction
   next h => rw [heq] at h; cases h; rfl
 
-variable (succ : (x : Pos) → motive (x+1))
+variable (succ : (x : PNat) → motive (x+1))
 
 /-- Cases matcher for successor view of positive integers -/
 @[specialize, elab_as_elim]
-protected def casesInd (t : Pos) : motive t :=
+protected def casesInd (t : PNat) : motive t :=
   match h : t.toIndView with
   | .one =>
     have : t = 1 := by
@@ -182,15 +182,15 @@ protected def casesInd (t : Pos) : motive t :=
   | .succ x =>
     have : t = x + 1 := by
       rw [toIndView_eq_iff_ofIndView_eq] at h
-      rw [←h, ofIndView, Pos.ext_iff, toNat_add, toNat_one]
+      rw [←h, ofIndView, PNat.ext_iff, toNat_add, toNat_one]
     this ▸ succ _
 
-@[simp] theorem casesInd_one : Pos.casesInd one succ 1 = one := rfl
+@[simp] theorem casesInd_one : PNat.casesInd one succ 1 = one := rfl
 
-@[simp] theorem casesInd_succ (x) : Pos.casesInd one succ (x+1) = succ x := by
+@[simp] theorem casesInd_succ (x) : PNat.casesInd one succ (x+1) = succ x := by
   have heq : toIndView (x+1) = .succ x := by
-    simp [toIndView_eq_iff_ofIndView_eq, ofIndView, Pos.ext_iff]
-  rw [Pos.casesInd]; split
+    simp [toIndView_eq_iff_ofIndView_eq, ofIndView, PNat.ext_iff]
+  rw [PNat.casesInd]; split
   next h => rw [heq] at h; contradiction
   next h => rw [heq] at h; cases h; rfl
 
@@ -200,10 +200,10 @@ end
 
 The _binary view_ of a positive integer corresponds to the alternate inductive definition:
 ```
-inductive Pos
-| one : Pos
-| bit0 : Pos → Pos
-| bit1 : Pos → Pos
+inductive PNat
+| one : PNat
+| bit0 : PNat → PNat
+| bit1 : PNat → PNat
 ```
 where `one` represents `1` and `bit0`, `bit1` represents the functions `fun x => 2 * x`,
 `fun x => 2 * x + 1`, respectively.
@@ -212,11 +212,11 @@ where `one` represents `1` and `bit0`, `bit1` represents the functions `fun x =>
 /-- Inductive type for binary view of positive integers -/
 inductive BinView
   | /-- Case `1` -/ one
-  | /-- Case `2 * x` -/ bit0 (x : Pos)
-  | /-- Case `2 * x + 1` -/ bit1 (x : Pos)
+  | /-- Case `2 * x` -/ bit0 (x : PNat)
+  | /-- Case `2 * x + 1` -/ bit1 (x : PNat)
 
 /-- Return the binary view of a positive integer -/
-@[inline] def toBinView (x : Pos) : BinView :=
+@[inline] def toBinView (x : PNat) : BinView :=
   match hq : x.toNat / 2, hr : x.toNat % 2 with
   | 0, 0 =>
     have : x.toNat = 0 := by rw [←Nat.div_add_mod x.toNat 2, hq, hr]
@@ -227,7 +227,7 @@ inductive BinView
   | _, _+2 => absurd (Nat.mod_lt x.toNat (show 0 < 2 by decide)) (by rw [hr]; intro; contradiction)
 
 /-- Return the positive integer represented by a binary view -/
-@[inline] def ofBinView : BinView → Pos
+@[inline] def ofBinView : BinView → PNat
   | .one => 1
   | .bit0 x => 2 * x
   | .bit1 x => 2 * x + 1
@@ -237,7 +237,7 @@ inductive BinView
 Using the binary view for recursive definitions currently requires some helper lemmas to help
 with termination proofs. The basic shape of a recursive definition usin binary view is this:
 ```
-def foo (x : Pos) : Widget :=
+def foo (x : PNat) : Widget :=
   match h : x.toBinView with
   | .one =>
     ...
@@ -253,7 +253,7 @@ elements.
 -/
 namespace BinView
 
-theorem bit0_helper {x y : Pos} : y.toBinView = .bit0 x → sizeOf x < sizeOf y := by
+theorem bit0_helper {x y : PNat} : y.toBinView = .bit0 x → sizeOf x < sizeOf y := by
   intro h
   simp [toBinView] at h
   split at h
@@ -273,7 +273,7 @@ theorem bit0_helper {x y : Pos} : y.toBinView = .bit0 x → sizeOf x < sizeOf y 
     apply absurd (Nat.mod_lt y.toNat (show 0 < 2 by decide))
     rw [hr]; intro; contradiction
 
-theorem bit1_helper {x y : Pos} : y.toBinView = .bit1 x → sizeOf x < sizeOf y := by
+theorem bit1_helper {x y : PNat} : y.toBinView = .bit1 x → sizeOf x < sizeOf y := by
   intro h
   simp [toBinView] at h
   split at h
@@ -350,7 +350,7 @@ end BinView
       contradiction
     next hq hr => contradiction; done
     next hq hr =>
-      simp [Pos.ext_iff] at h ⊢
+      simp [PNat.ext_iff] at h ⊢
       rw [←h, ←Nat.div_add_mod x.toNat 2, hq, hr]; rfl
     next hq hr => contradiction; done
     next heq =>
@@ -365,7 +365,7 @@ end BinView
     next hq hr => contradiction; done
     next hq hr => contradiction; done
     next hq hr =>
-      simp [Pos.ext_iff] at h ⊢
+      simp [PNat.ext_iff] at h ⊢
       rw [←h, ←Nat.div_add_mod x.toNat 2, hq, hr]
     next heq =>
       apply absurd (Nat.mod_lt x.toNat (show 0 < 2 by decide))
@@ -379,29 +379,29 @@ theorem toBinView_eq_iff_ofBinView_eq : toBinView x = y ↔ ofBinView y = x := b
 The successor view can also be used in proofs using the `induction` and `cases` tactics using
 custom recursors. The basic syntax for these are
 ```
-theorem foo (x : Pos) : ... := by
-  induction x using Pos.recBin with
+theorem foo (x : PNat) : ... := by
+  induction x using PNat.recBin with
   | one => ...
   | bit0 x ih => ...
   | bit1 x ih => ...
 ```
 and
 ```
-theorem bar (x : Pos) : ... := by
-  cases x using Pos.casesInd with
+theorem bar (x : PNat) : ... := by
+  cases x using PNat.casesInd with
   | one => ...
   | bit0 x => ...
   | bit1 x => ...
 ```
 -/
 section Recursors
-variable {motive : Pos → Sort _} (one : motive 1)
-  (bit0 : (x : Pos) → motive x → motive (2 * x))
-  (bit1 : (x : Pos) → motive x → motive (2 * x + 1))
+variable {motive : PNat → Sort _} (one : motive 1)
+  (bit0 : (x : PNat) → motive x → motive (2 * x))
+  (bit1 : (x : PNat) → motive x → motive (2 * x + 1))
 
 /-- Recursor for binary view of positive integers -/
 @[specialize, elab_as_elim]
-protected def recBin (t : Pos) : motive t :=
+protected def recBin (t : PNat) : motive t :=
   match h : t.toBinView with
   | .one =>
     have : 1 = t := by
@@ -413,37 +413,37 @@ protected def recBin (t : Pos) : motive t :=
     have : 2 * x = t := by
       simp [toBinView_eq_iff_ofBinView_eq, ofBinView] at h
       exact h
-    this ▸ bit0 x (Pos.recBin x)
+    this ▸ bit0 x (PNat.recBin x)
   | .bit1 x =>
     have := BinView.bit1_helper h
     have : 2 * x + 1 = t := by
       simp [toBinView_eq_iff_ofBinView_eq, ofBinView] at h
       exact h
-    this ▸ bit1 x (Pos.recBin x)
+    this ▸ bit1 x (PNat.recBin x)
 
-@[simp] theorem recBin_one : Pos.recBin one bit0 bit1 1 = one := rfl
+@[simp] theorem recBin_one : PNat.recBin one bit0 bit1 1 = one := rfl
 
-theorem recBin_bit0 (x : Pos) : Pos.recBin one bit0 bit1 (2 * x) = bit0 x (Pos.recBin one bit0 bit1 x) := by
+theorem recBin_bit0 (x : PNat) : PNat.recBin one bit0 bit1 (2 * x) = bit0 x (PNat.recBin one bit0 bit1 x) := by
     have heq : toBinView (2 * x) = .bit0 x := by rw [toBinView_eq_iff_ofBinView_eq]; rfl
-    rw [Pos.recBin]
+    rw [PNat.recBin]
     split
     next h => rw [heq] at h; contradiction
     next h => rw [heq] at h; cases h; rfl
     next h => rw [heq] at h; contradiction
 
-theorem recBin_bit1 (x : Pos) : Pos.recBin one bit0 bit1 (2 * x + 1) = bit1 x (Pos.recBin one bit0 bit1 x) := by
+theorem recBin_bit1 (x : PNat) : PNat.recBin one bit0 bit1 (2 * x + 1) = bit1 x (PNat.recBin one bit0 bit1 x) := by
     have heq : toBinView (2 * x + 1) = .bit1 x := by rw [toBinView_eq_iff_ofBinView_eq]; rfl
-    rw [Pos.recBin]
+    rw [PNat.recBin]
     split
     next h => rw [heq] at h; contradiction
     next h => rw [heq] at h; contradiction
     next h => rw [heq] at h; cases h; rfl
 
-variable (bit0 : (x : Pos) → motive (2 * x)) (bit1 : (x : Pos) → motive (2 * x + 1))
+variable (bit0 : (x : PNat) → motive (2 * x)) (bit1 : (x : PNat) → motive (2 * x + 1))
 
 /-- Matcher for binary view of positive integers -/
 @[specialize, elab_as_elim]
-protected def casesBin (t : Pos) : motive t :=
+protected def casesBin (t : PNat) : motive t :=
   match h : t.toBinView with
   | .one =>
     have : t = 1 := by
@@ -461,27 +461,27 @@ protected def casesBin (t : Pos) : motive t :=
       rw [←h, ofBinView]
     this ▸ bit1 _
 
-@[simp] theorem casesBin_one : Pos.casesBin one bit0 bit1 1 = one := rfl
+@[simp] theorem casesBin_one : PNat.casesBin one bit0 bit1 1 = one := rfl
 
-@[simp] theorem casesBin_bit0 (x) : Pos.casesBin one bit0 bit1 (2 * x) = bit0 x := by
+@[simp] theorem casesBin_bit0 (x) : PNat.casesBin one bit0 bit1 (2 * x) = bit0 x := by
   have heq : toBinView (2 * x) = .bit0 x := by rw [toBinView_eq_iff_ofBinView_eq]; rfl
-  rw [Pos.casesBin]; split
+  rw [PNat.casesBin]; split
   next h => rw [heq] at h; contradiction
   next h => rw [heq] at h; cases h; rfl
   next h => rw [heq] at h; contradiction
 
-@[simp] theorem casesBin_bit1 (x) : Pos.casesBin one bit0 bit1 (2 * x + 1) = bit1 x := by
+@[simp] theorem casesBin_bit1 (x) : PNat.casesBin one bit0 bit1 (2 * x + 1) = bit1 x := by
   have heq : toBinView (2 * x + 1) = .bit1 x := by rw [toBinView_eq_iff_ofBinView_eq]; rfl
-  rw [Pos.casesBin]; split
+  rw [PNat.casesBin]; split
   next h => rw [heq] at h; contradiction
   next h => rw [heq] at h; contradiction
   next h => rw [heq] at h; cases h; rfl
 
 end Recursors
 
-/-- Tail recursive version of `Pos.log2` -/
-private def log2TR (x : Pos) : Nat :=
-  let rec loop (l : Nat) (x : Pos) : Nat :=
+/-- Tail recursive version of `PNat.log2` -/
+private def log2TR (x : PNat) : Nat :=
+  let rec loop (l : Nat) (x : PNat) : Nat :=
     match h : x.toBinView with
     | .one => l
     | .bit0 x =>
@@ -494,13 +494,13 @@ private def log2TR (x : Pos) : Nat :=
 
 /-- Logarithm base 2, rounded down -/
 @[implemented_by log2TR]
-protected def log2 (x : Pos) : Nat :=
-  Pos.recBin 0 (fun _ l => l+1) (fun _ l => l+1) x
+protected def log2 (x : PNat) : Nat :=
+  PNat.recBin 0 (fun _ l => l+1) (fun _ l => l+1) x
 
-@[simp] theorem log2_one : Pos.log2 1 = 0 := rfl
+@[simp] theorem log2_one : PNat.log2 1 = 0 := rfl
 
-theorem log2_bit0 (x) : Pos.log2 (2 * x) = Pos.log2 x + 1 := Pos.recBin_bit0 ..
+theorem log2_bit0 (x) : PNat.log2 (2 * x) = PNat.log2 x + 1 := PNat.recBin_bit0 ..
 
-theorem log2_bit1 (x) : Pos.log2 (2 * x + 1) = Pos.log2 x + 1 := Pos.recBin_bit1 ..
+theorem log2_bit1 (x) : PNat.log2 (2 * x + 1) = PNat.log2 x + 1 := PNat.recBin_bit1 ..
 
-end Pos
+end PNat
