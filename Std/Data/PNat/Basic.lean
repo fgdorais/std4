@@ -38,6 +38,24 @@ theorem toNat_ge (a b : PNat) : (a ≥ b) = (a.toNat ≥ b.toNat) := rfl
 theorem toNat_gt (a b : PNat) : (a > b) = (a.toNat > b.toNat) := rfl
 theorem toNat_compare (a b : PNat) : compare a b = compare a.toNat b.toNat := rfl
 
+/-- Maximum of two positive integers -/
+protected def max (x y : PNat) : PNat := if x ≤ y then y else x
+instance : Max PNat := ⟨PNat.max⟩
+
+theorem toNat_max (x y : PNat) : (max x y).toNat = max x.toNat y.toNat := by
+  simp only [Max.max, PNat.max, Nat.max_def]; split
+  next h => rw [toNat_le] at h; rw [if_pos h]
+  next h => rw [toNat_le] at h; rw [if_neg h]
+
+/-- Minimum of two positive integers -/
+protected def min (x y : PNat) : PNat := if x ≤ y then x else y
+instance : Min PNat := ⟨PNat.min⟩
+
+theorem toNat_min (x y : PNat) : (min x y).toNat = min x.toNat y.toNat := by
+  simp only [Min.min, PNat.min, Nat.min_def]; split
+  next h => rw [toNat_le] at h; rw [if_pos h]
+  next h => rw [toNat_le] at h; rw [if_neg h]
+
 /-- Addition of positive integers -/
 protected def add : PNat → PNat → PNat
   | ⟨x+1,_⟩, ⟨y+1,_⟩ => ⟨(x+1)+(y+1), Nat.noConfusion⟩

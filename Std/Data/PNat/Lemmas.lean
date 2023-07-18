@@ -6,12 +6,12 @@ namespace PNat
 local syntax "toNat" (colGt ident)? : tactic
 local macro_rules
 | `(tactic| toNat) =>
-  `(tactic| simp only [toNat_one, toNat_two, toNat_add, toNat_mul, toNat_pow, toNat_eq, toNat_ne,
-      toNat_le, toNat_lt, toNat_ge, toNat_gt])
+  `(tactic| simp only [toNat_one, toNat_two, toNat_min, toNat_max, toNat_add, toNat_mul, toNat_pow,
+      toNat_eq, toNat_ne, toNat_le, toNat_lt, toNat_ge, toNat_gt])
 | `(tactic| toNat $n:ident) =>
   let n := Lean.mkIdent (`Nat ++ n.getId)
-  `(tactic| simp only [toNat_one, toNat_two, toNat_add, toNat_mul, toNat_pow, toNat_eq, toNat_ne,
-      toNat_le, toNat_lt, toNat_ge, toNat_gt]; apply $n)
+  `(tactic| simp only [toNat_one, toNat_two, toNat_min, toNat_max, toNat_add, toNat_mul, toNat_pow,
+      toNat_eq, toNat_ne, toNat_le, toNat_lt, toNat_ge, toNat_gt]; apply $n)
 
 /-! ## Ordering -/
 
@@ -86,6 +86,110 @@ protected theorem not_lt_one (a : PNat) : ¬ a < 1 := by
 protected theorem one_lt_of_ne_one {a : PNat} (h : a ≠ 1) : 1 < a :=
   PNat.lt_of_le_of_ne (PNat.one_le ..) h.symm
 
+/-! ## Min/Max -/
+
+protected theorem min_le_left (a b : PNat) : min a b ≤ a := by
+  toNat min_le_left
+
+protected theorem min_le_right (a b : PNat) : min a b ≤ b := by
+  toNat min_le_right
+
+protected theorem le_min_iff {a b c : PNat} : a ≤ min b c ↔ a ≤ b ∧ a ≤ c := by
+  toNat le_min_iff
+
+protected theorem lt_min_iff {a b c : PNat} : a < min b c ↔ a < b ∧ a < c := by
+  toNat lt_min_iff
+
+protected theorem min_eq_left {a b : PNat} : a ≤ b → min a b = a := by
+  toNat min_eq_left
+
+protected theorem min_eq_right {a b : PNat} : b ≤ a → min a b = b := by
+  toNat min_eq_right
+
+protected theorem min_one_left (a : PNat) : min 1 a = 1 :=
+  PNat.min_eq_left (PNat.one_le _)
+
+protected theorem min_one_right (a : PNat) : min a 1 = 1 :=
+  PNat.min_eq_right (PNat.one_le _)
+
+protected theorem min_self (a : PNat) : min a a = a :=
+  PNat.min_eq_left (PNat.le_refl _)
+
+protected theorem min_comm (a b : PNat) : min a b = min b a := by
+  toNat min_comm
+
+protected theorem min_assoc (a b c : PNat) : min (min a b) c = min a (min b c) := by
+  toNat min_assoc
+
+protected theorem min_add_add_left (a b c : PNat) : min (a + b) (a + c) = a + min b c := by
+  toNat min_add_add_left
+
+protected theorem min_add_add_right (a b c : PNat) : min (a + b) (c + b) = min a c + b := by
+  toNat min_add_add_right
+
+protected theorem min_mul_mul_left (a b c : PNat) : min (a * b) (a * c) = a * min b c := by
+  toNat min_mul_mul_left
+
+protected theorem min_mul_mul_right (a b c : PNat) : min (a * b) (c * b) = min a c * b := by
+  toNat min_mul_mul_right
+
+protected theorem le_max_left (a b : PNat) : a ≤ max a b := by
+  toNat le_max_left
+
+protected theorem le_max_right (a b : PNat) : b ≤ max a b := by
+  toNat le_max_right
+
+protected theorem max_le_iff {a b c : PNat} : max a b ≤ c ↔ a ≤ c ∧ b ≤ c := by
+  toNat max_le_iff
+
+protected theorem max_lt_iff {a b c : PNat} : max a b < c ↔ a < c ∧ b < c := by
+  toNat max_lt_iff
+
+protected theorem max_eq_left {a b : PNat} : b ≤ a → max a b = a := by
+  toNat max_eq_left
+
+protected theorem max_eq_right {a b : PNat} : a ≤ b → max a b = b := by
+  toNat max_eq_right
+
+protected theorem max_one_left (a : PNat) : max 1 a = a :=
+  PNat.max_eq_right (PNat.one_le _)
+
+protected theorem max_one_right (a : PNat) : max a 1 = a :=
+  PNat.max_eq_left (PNat.one_le _)
+
+protected theorem max_self (a : PNat) : max a a = a :=
+  PNat.max_eq_left (PNat.le_refl _)
+
+protected theorem max_comm (a b : PNat) : max a b = max b a := by
+  toNat max_comm
+
+protected theorem max_assoc (a b c : PNat) : max (max a b) c = max a (max b c) := by
+   toNat max_assoc
+
+protected theorem max_add_add_left (a b c : PNat) : max (a + b) (a + c) = a + max b c := by
+  toNat max_add_add_left
+
+protected theorem max_add_add_right (a b c : PNat) : max (a + b) (c + b) = max a c + b := by
+  toNat max_add_add_right
+
+protected theorem max_mul_mul_left (a b c : PNat) : max (a * b) (a * c) = a * max b c := by
+  toNat max_mul_mul_left
+
+protected theorem max_mul_mul_right (a b c : PNat) : max (a * b) (c * b) = max a c * b := by
+  toNat max_mul_mul_right
+
+protected theorem max_min_distrib_left (a b c : PNat) : max a (min b c) = min (max a b) (max a c) := by
+  toNat max_min_distrib_left
+
+protected theorem max_min_distrib_right (a b c : Nat) : max (min a b) c = min (max a c) (max b c) := by
+  toNat max_min_distrib_right
+
+protected theorem min_max_distrib_left (a b c : PNat) : min a (max b c) = max (min a b) (min a c) := by
+  toNat min_max_distrib_left
+
+protected theorem min_max_distrib_right (a b c : Nat) : min (max a b) c = max (min a c) (min b c) := by
+  toNat min_max_distrib_right
+
 /-! ## Addition -/
 
 protected theorem add_comm (a b : PNat) : a + b = b + a := by
@@ -101,7 +205,7 @@ protected theorem add_right_comm (a b c : PNat) : a + b + c = a + c + b := by
   toNat add_right_comm
 
 protected theorem add_add_add_comm (a b c d : PNat) : a + b + (c + d) = a + c + (b + d) := by
-  rw [PNat.add_assoc, PNat.add_left_comm b, PNat.add_assoc]
+  toNat add_add_add_comm
 
 protected theorem add_left_cancel {a b c : PNat} : a + b = a + c → b = c := by
   toNat add_left_cancel
@@ -324,10 +428,10 @@ protected theorem pow_right_comm (a : PNat) (b c : Nat) : (a ^ b) ^ c = (a ^ c) 
   toNat pow_right_comm
 
 protected theorem pow_le_pow_left (a : PNat) {b c : Nat} : b ≤ c → a ^ b ≤ a ^ c := by
-  simp; apply Nat.pow_le_pow_of_le_right a.zero_lt
+  toNat; apply Nat.pow_le_pow_of_le_right a.zero_lt
 
 protected theorem pow_le_pow_right (a : Nat) {b c : PNat} : b ≤ c → b ^ a ≤ c ^ a := by
-  simp; intro h; apply Nat.pow_le_pow_of_le_left h
+  toNat; intro h; apply Nat.pow_le_pow_of_le_left h
 
 protected theorem pow_lt_pow_left_of_one_lt {a : PNat} : ∀ {b c : Nat}, b < c → 1 < a → a ^ b < a ^ c
   | 0, c+1, _, h1 => by
