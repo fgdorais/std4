@@ -278,20 +278,23 @@ protected theorem lt_mul_right_of_one_lt (a : PNat) : 1 < b → a < a * b := by
   rwa [PNat.mul_one] at h
 
 protected theorem eq_one_of_mul_eq_one_left {a b : PNat} (h : a * b = 1) : a = 1 := by
-   cases a using PNat.casesInd with
-  | one => rfl
-  | succ a => rw [PNat.add_mul] at h; exact absurd h (PNat.add_ne_one _ _)
+  match a, b with
+  | ⟨1,_⟩, _ => rfl
+  | ⟨_+2,_⟩, ⟨_+1,_⟩ => simp [PNat.toNat_mul, PNat.ext_iff, Nat.mul_succ, Nat.add_succ] at h
 
 protected theorem eq_one_of_mul_eq_one_right {a b : PNat} (h : a * b = 1) : b = 1 := by
-  cases b using PNat.casesInd with
-  | one => rfl
-  | succ b => rw [PNat.mul_add] at h; exact absurd h (PNat.add_ne_one _ _)
+  match a, b with
+  | _, ⟨1, _⟩ => rfl
+  | ⟨_+1,_⟩, ⟨_+2,_⟩ => simp [PNat.toNat_mul, PNat.ext_iff, Nat.succ_mul, Nat.add_succ] at h
 
 protected theorem mul_eq_one_iff {a b : PNat} : a * b = 1 ↔ a = 1 ∧ b = 1 :=
   ⟨fun h => ⟨PNat.eq_one_of_mul_eq_one_left h, PNat.eq_one_of_mul_eq_one_right h⟩,
     fun ⟨h₁, h₂⟩ => by rw [h₁, h₂, PNat.mul_one]⟩
 
 /-! ## Exponentiation -/
+
+-- Fix for  https://github.com/leanprover/lean4/issues/2220
+local macro_rules | `($x ^ $y) => `(HPow.hPow $x $y)
 
 @[simp] protected theorem one_pow (a : Nat) : (1 : PNat) ^ a = 1 := by
   toNat one_pow
