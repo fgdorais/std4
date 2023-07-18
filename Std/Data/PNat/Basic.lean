@@ -7,6 +7,7 @@ import Std.Data.Nat.Lemmas
   protected toNat : Nat
   /-- Positive integers are nonzero -/
   ne_zero : toNat ≠ 0
+deriving DecidableEq
 
 namespace PNat
 
@@ -20,12 +21,29 @@ instance : OfNat PNat (n+1) := ⟨n+1, Nat.noConfusion⟩
 @[simp] theorem toNat_two : PNat.toNat 2 = 2 := rfl
 @[simp] theorem toNat_ofNat_succ (x : Nat) : PNat.toNat (OfNat.ofNat (x+1)) = x+1 := rfl
 
+/-- Comparison of positive integers -/
+
+instance : LE PNat where le a b := a.toNat ≤ b.toNat
+instance : LT PNat where lt a b := a.toNat < b.toNat
+instance : Ord PNat where compare a b := compare a.toNat b.toNat
+
+instance (a b : PNat) : Decidable (a ≤ b) := inferInstanceAs (Decidable (a.toNat ≤ b.toNat))
+instance (a b : PNat) : Decidable (a < b) := inferInstanceAs (Decidable (a.toNat < b.toNat))
+
+theorem toNat_eq (a b : PNat) : (a = b) = (a.toNat = b.toNat) := propext (PNat.ext_iff ..)
+theorem toNat_ne (a b : PNat) : (a ≠ b) = (a.toNat ≠ b.toNat) := congrArg Not (toNat_eq ..)
+theorem toNat_le (a b : PNat) : (a ≤ b) = (a.toNat ≤ b.toNat) := rfl
+theorem toNat_lt (a b : PNat) : (a < b) = (a.toNat < b.toNat) := rfl
+theorem toNat_ge (a b : PNat) : (a ≥ b) = (a.toNat ≥ b.toNat) := rfl
+theorem toNat_gt (a b : PNat) : (a > b) = (a.toNat > b.toNat) := rfl
+theorem toNat_compare (a b : PNat) : compare a b = compare a.toNat b.toNat := rfl
+
 /-- Addition of positive integers -/
 protected def add : PNat → PNat → PNat
   | ⟨x+1,_⟩, ⟨y+1,_⟩ => ⟨(x+1)+(y+1), Nat.noConfusion⟩
 instance : Add PNat := ⟨PNat.add⟩
 
-@[local simp] theorem toNat_add : ∀ (x y : PNat), (x + y).toNat = x.toNat + y.toNat
+theorem toNat_add : ∀ (x y : PNat), (x + y).toNat = x.toNat + y.toNat
   | ⟨_+1,_⟩, ⟨_+1,_⟩ => rfl
 
 /-- Partial subtraction of positive integers -/
@@ -42,11 +60,11 @@ protected def mul : PNat → PNat → PNat
   | ⟨x+1,_⟩, ⟨y+1,_⟩ => ⟨(x+1)*(y+1), Nat.noConfusion⟩
 instance : Mul PNat := ⟨PNat.mul⟩
 
-@[local simp] theorem toNat_mul : ∀ (x y : PNat), (x * y).toNat = x.toNat * y.toNat
+theorem toNat_mul : ∀ (x y : PNat), (x * y).toNat = x.toNat * y.toNat
   | ⟨_+1,_⟩, ⟨_+1,_⟩ => rfl
 
 /-- Exponentiation of positive integers -/
-@[local simp] protected def pow (x : PNat) (y : Nat) : PNat :=
+protected def pow (x : PNat) (y : Nat) : PNat :=
   ⟨x.toNat ^ y, Nat.not_eq_zero_of_lt (Nat.pos_pow_of_pos _ x.zero_lt)⟩
 
 instance : HPow PNat Nat PNat := ⟨PNat.pow⟩
@@ -78,6 +96,11 @@ inductive IndView
 @[inline] def ofIndView : IndView → PNat
   | .one => 1
   | .succ ⟨x, _⟩ => ⟨x+1, Nat.noConfusion⟩
+
+@[simp] theorem ofIndView_one : ofIndView .one = 1 := rfl
+
+@[simp] theorem ofIndView_succ (x) : ofIndView (.succ x) = x + 1 := by
+  simp only [toNat_eq, toNat_one, toNat_add, ofIndView]
 
 @[simp] theorem toIndView_ofIndView (x) : toIndView (ofIndView x) = x := by
   rw [toIndView, ofIndView]
@@ -163,7 +186,7 @@ protected def recInd (t : PNat) : motive t :=
 
 theorem recInd_succ (x) : PNat.recInd one succ (x+1) = succ x (PNat.recInd one succ x) := by
   have heq : toIndView (x+1) = .succ x := by
-    simp [toIndView_eq_iff_ofIndView_eq, ofIndView, PNat.ext_iff]
+    simp [toNat_add, toIndView_eq_iff_ofIndView_eq, ofIndView, PNat.ext_iff]
   rw [PNat.recInd]; split
   next h => rw [heq] at h; contradiction
   next h => rw [heq] at h; cases h; rfl
@@ -189,7 +212,7 @@ protected def casesInd (t : PNat) : motive t :=
 
 @[simp] theorem casesInd_succ (x) : PNat.casesInd one succ (x+1) = succ x := by
   have heq : toIndView (x+1) = .succ x := by
-    simp [toIndView_eq_iff_ofIndView_eq, ofIndView, PNat.ext_iff]
+    simp [toNat_add, toIndView_eq_iff_ofIndView_eq, ofIndView, PNat.ext_iff]
   rw [PNat.casesInd]; split
   next h => rw [heq] at h; contradiction
   next h => rw [heq] at h; cases h; rfl
@@ -231,6 +254,12 @@ inductive BinView
   | .one => 1
   | .bit0 x => 2 * x
   | .bit1 x => 2 * x + 1
+
+@[simp] theorem ofBinView_one : ofBinView .one = 1 := rfl
+
+@[simp] theorem ofBinView_bit0 (x) : ofBinView (.bit0 x) = 2 * x := rfl
+
+@[simp] theorem ofBinView_bit1 (x) : ofBinView (.bit1 x) = 2 * x + 1 := rfl
 
 /-! ### Binary View Helpers
 
@@ -301,11 +330,11 @@ end BinView
   | bit0 x =>
     have := x.ne_zero
     split
-    next hq hr => simp at hq hr; contradiction
-    next hq hr => simp at hq hr
+    next hq hr => simp [toNat_add, toNat_mul] at hq hr; contradiction
+    next hq hr => simp [toNat_add, toNat_mul] at hq hr
     next hq hr =>
-      simp at hq hr; congr 1; ext; exact hq.symm
-    next hq hr => simp at hq hr
+      simp [toNat_add, toNat_mul] at hq hr; congr 1; ext; exact hq.symm
+    next hq hr => simp [toNat_add, toNat_mul] at hq hr
     next heq =>
       apply absurd (Nat.mod_lt (2 * x).toNat (show 0 < 2 by decide))
       rw [heq]; intro; contradiction
@@ -313,13 +342,13 @@ end BinView
     have := x.ne_zero
     split
     next hq hr =>
-      simp [Nat.add_comm (2 * _) 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr; done
+      simp [toNat_add, toNat_mul, Nat.add_comm (2 * _) 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr
     next hq hr =>
-      simp [Nat.add_comm (2 * _) 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr; contradiction
+      simp [toNat_add, toNat_mul, Nat.add_comm (2 * _) 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr; contradiction
     next hq hr =>
-      simp [Nat.add_comm (2 * _) 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr; done
+      simp [toNat_add, toNat_mul, Nat.add_comm (2 * _) 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr
     next hq hr =>
-      simp [Nat.add_comm _ 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr
+      simp [toNat_add, toNat_mul, Nat.add_comm (2 * _) 1, Nat.add_mul_div_left, Nat.div_eq_of_lt] at hq hr
       congr 1; ext; exact hq.symm
     next heq =>
       apply absurd (Nat.mod_lt (2 * x + 1).toNat (show 0 < 2 by decide))
@@ -350,7 +379,7 @@ end BinView
       contradiction
     next hq hr => contradiction; done
     next hq hr =>
-      simp [PNat.ext_iff] at h ⊢
+      simp [toNat_mul, toNat_add, PNat.ext_iff] at h ⊢
       rw [←h, ←Nat.div_add_mod x.toNat 2, hq, hr]; rfl
     next hq hr => contradiction; done
     next heq =>
@@ -365,7 +394,7 @@ end BinView
     next hq hr => contradiction; done
     next hq hr => contradiction; done
     next hq hr =>
-      simp [PNat.ext_iff] at h ⊢
+      simp [toNat_add, toNat_mul, PNat.ext_iff] at h ⊢
       rw [←h, ←Nat.div_add_mod x.toNat 2, hq, hr]
     next heq =>
       apply absurd (Nat.mod_lt x.toNat (show 0 < 2 by decide))
