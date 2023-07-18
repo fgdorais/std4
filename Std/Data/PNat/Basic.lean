@@ -73,6 +73,15 @@ protected def sub? (x y : PNat) : Option PNat :=
 theorem toNat_sub? (x y : PNat) : (PNat.sub? x y).rec 0 PNat.toNat = x.toNat - y.toNat := by
   unfold PNat.sub?; split <;> next h => rw [h]
 
+/-- Subtraction of positive integers, with signed result -/
+protected def sub (x y : PNat) : Int :=
+  match y.toNat - x.toNat with
+  | 0 => .ofNat (x.toNat - y.toNat)
+  | r+1 => .negSucc r
+instance : HSub PNat PNat Int := ⟨PNat.sub⟩
+
+theorem toNat_sub (x y : PNat) : instHSubPNatInt.hSub x y = Int.subNatNat x.toNat y.toNat := rfl
+
 /-- Multiplication of positive integers -/
 protected def mul : PNat → PNat → PNat
   | ⟨x+1,_⟩, ⟨y+1,_⟩ => ⟨(x+1)*(y+1), Nat.noConfusion⟩
