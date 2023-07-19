@@ -1,6 +1,9 @@
 import Std.Tactic.Ext
 import Std.Data.Nat.Lemmas
 
+/-- Simp attribute to convert `PNat` to `Nat` -/
+register_simp_attr pnat_to_nat
+
 /-- Positive integer type -/
 @[ext] structure PNat where
   /-- Coercion from `PNat` to `Nat` -/

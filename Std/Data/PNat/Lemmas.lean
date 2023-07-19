@@ -3,15 +3,16 @@ import Std.Data.PNat.Basic
 
 namespace PNat
 
+attribute [pnat_to_nat] toNat_one toNat_two toNat_min toNat_max toNat_add toNat_mul toNat_pow
+      toNat_eq toNat_ne toNat_le toNat_lt toNat_ge toNat_gt
+
 local syntax "toNat" (colGt ident)? : tactic
 local macro_rules
 | `(tactic| toNat) =>
-  `(tactic| simp only [toNat_one, toNat_two, toNat_min, toNat_max, toNat_add, toNat_mul, toNat_pow,
-      toNat_eq, toNat_ne, toNat_le, toNat_lt, toNat_ge, toNat_gt])
+  `(tactic| simp only [pnat_to_nat])
 | `(tactic| toNat $n:ident) =>
   let n := Lean.mkIdent (`Nat ++ n.getId)
-  `(tactic| simp only [toNat_one, toNat_two, toNat_min, toNat_max, toNat_add, toNat_mul, toNat_pow,
-      toNat_eq, toNat_ne, toNat_le, toNat_lt, toNat_ge, toNat_gt]; apply $n)
+  `(tactic| simp only [pnat_to_nat]; apply $n)
 
 /-! ## Ordering -/
 
