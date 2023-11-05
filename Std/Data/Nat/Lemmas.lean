@@ -266,15 +266,16 @@ protected theorem one_lt_two : 1 < 2 := Nat.succ_lt_succ Nat.zero_lt_one
 protected theorem eq_zero_of_not_pos (h : ¬0 < n) : n = 0 :=
   Nat.eq_zero_of_le_zero (Nat.not_lt.1 h)
 
-/-! ## succ/pred -/
+/-! ### succ/pred -/
 
 attribute [simp] succ_ne_zero zero_lt_succ lt_succ_self Nat.pred_zero Nat.pred_succ Nat.pred_le
 
 theorem succ_ne_self (n) : succ n ≠ n := Nat.ne_of_gt (lt_succ_self n)
 
-theorem succ_le : succ n ≤ m ↔ n < m := .rfl
+theorem succ_le {n m : Nat} : succ n ≤ m ↔ n < m := .rfl
 
-theorem lt_succ : m < succ n ↔ m ≤ n := ⟨le_of_lt_succ, lt_succ_of_le⟩
+theorem lt_succ {m n : Nat} : m < succ n ↔ m ≤ n :=
+  ⟨le_of_lt_succ, lt_succ_of_le⟩
 
 theorem lt_succ_of_lt (h : a < b) : a < succ b := le_succ_of_le h
 
@@ -1044,32 +1045,21 @@ theorem mul_mod (a b n : Nat) : a * b % n = (a % n) * (b % n) % n := by
 theorem add_mod (a b n : Nat) : (a + b) % n = ((a % n) + (b % n)) % n := by
   rw [add_mod_mod, mod_add_mod]
 
-/-! ### pow -/
-
-theorem pow_succ' {m n : Nat} : m ^ n.succ = m * m ^ n := by
-  rw [Nat.pow_succ, Nat.mul_comm]
-
-@[simp] theorem pow_eq {m n : Nat} : m.pow n = m ^ n := rfl
-
-@[simp] theorem shiftLeft_eq (a b : Nat) : a <<< b = a * 2 ^ b :=
-  match b with
-  | 0 => (Nat.mul_one _).symm
-  | b+1 => (shiftLeft_eq _ b).trans <| by
-    simp [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm]
-
-theorem one_shiftLeft (n : Nat) : 1 <<< n = 2 ^ n := by rw [shiftLeft_eq, Nat.one_mul]
+/-! ## pow -/
 
 attribute [simp] Nat.pow_zero
 
-protected theorem zero_pow {n : Nat} (H : 0 < n) : 0 ^ n = 0 := by
-  match n with
-  | 0 => contradiction
-  | n+1 => rw [Nat.pow_succ, Nat.mul_zero]
+theorem pow_succ' {m : Nat} : m ^ n.succ = m * m ^ n := by
+  rw [Nat.pow_succ, Nat.mul_comm]
 
-@[simp] protected theorem one_pow (n : Nat) : 1 ^ n = 1 := by
-  induction n with
-  | zero => rfl
-  | succ _ ih => rw [Nat.pow_succ, Nat.mul_one, ih]
+@[simp] theorem pow_eq : Nat.pow m n = m ^ n := rfl
+
+protected theorem zero_pow : ∀ n, 0 < n → 0 ^ n = 0
+  | _+1, _ => rfl
+
+@[simp] protected theorem one_pow : ∀ (n : Nat), 1 ^ n = 1
+  | 0 => rfl
+  | _+1 => by rw [Nat.pow_succ, Nat.mul_one]; exact Nat.one_pow ..
 
 @[simp] protected theorem pow_one (a : Nat) : a ^ 1 = a := by
   rw [Nat.pow_succ, Nat.pow_zero, Nat.one_mul]
@@ -1100,7 +1090,25 @@ protected theorem mul_pow (a b n : Nat) : (a * b) ^ n = a ^ n * b ^ n := by
   | zero => rw [Nat.pow_zero, Nat.pow_zero, Nat.pow_zero, Nat.mul_one]
   | succ _ ih => rw [Nat.pow_succ, Nat.pow_succ, Nat.pow_succ, Nat.mul_mul_mul_comm, ih]
 
-/-! ### log2 -/
+protected theorem pow_lt_pow_of_lt_left {a b : Nat} : a < b → {n : Nat} → 0 < n → a ^ n < b ^ n
+  | h, n+1, _ => by
+    have hpos : 0 < b ^ n := Nat.pos_pow_of_pos n (Nat.zero_lt_of_lt h)
+    simp [Nat.pow_succ]
+    apply Nat.mul_lt_mul_of_le_of_lt _ h hpos
+    exact Nat.pow_le_pow_of_le_left (Nat.le_of_lt h) n
+
+protected theorem pow_lt_pow_of_lt_right {a : Nat} : 1 < a → m < n → a ^ m < a ^ n := by
+  intro ha h; induction m, n using Nat.recDiag with try contradiction
+  | zero_succ n =>
+    have hpos := Nat.pos_pow_of_pos n (Nat.le_of_lt ha)
+    apply Nat.lt_of_le_of_lt hpos
+    have : a ^ n * 1 < a ^ n * a := Nat.mul_lt_mul_of_pos_left ha hpos
+    rwa [Nat.mul_one] at this
+  | succ_succ m n ih =>
+    apply Nat.mul_lt_mul_of_pos_right _ (Nat.le_of_lt ha)
+    exact ih (Nat.lt_of_succ_lt_succ h)
+
+/-! ## log2 -/
 
 theorem le_log2 (h : n ≠ 0) : k ≤ n.log2 ↔ 2 ^ k ≤ n := by
   match k with
@@ -1235,7 +1243,7 @@ protected theorem dvd_of_mul_dvd_mul_right (kpos : 0 < k) (H : m * k ∣ n * k) 
 @[simp] theorem sum_append : Nat.sum (l₁ ++ l₂) = Nat.sum l₁ + Nat.sum l₂ := by
   induction l₁ <;> simp [*, Nat.add_assoc]
 
-/-! ### shiftRight -/
+/-! ### shiftRight/shiftLeft -/
 
 @[simp] theorem shiftRight_zero : n >>> 0 = n := rfl
 
@@ -1255,7 +1263,12 @@ theorem shiftRight_eq_div_pow (m : Nat) : ∀ n, m >>> n = m / 2 ^ n
     rw [shiftRight_add, shiftRight_eq_div_pow m k]
     simp [Nat.div_div_eq_div_mul, ← Nat.pow_succ]
 
-/-! ## deprecated -/
+theorem shiftLeft_eq' (a b : Nat) : a <<< b = 2 ^ b * a := by
+  induction b generalizing a with
+  | zero => rw [Nat.pow_zero, Nat.one_mul]; rfl
+  | succ _ ih => rw [Nat.pow_succ, Nat.mul_assoc, ←ih]; rfl
 
-@[deprecated Nat.succ_add_eq_add_succ]
-theorem succ_add_eq_succ_add (n m) : succ n + m = n + succ m := Nat.succ_add_eq_add_succ ..
+@[simp] theorem shiftLeft_eq (a b : Nat) : a <<< b = a * 2 ^ b := by
+  rw [Nat.mul_comm, Nat.shiftLeft_eq']
+
+theorem one_shiftLeft (n) : 1 <<< n = 2 ^ n := by rw [shiftLeft_eq, Nat.one_mul]
