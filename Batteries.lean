@@ -20,6 +20,7 @@ import Batteries.Data.BitVec
 import Batteries.Data.Bool
 import Batteries.Data.ByteArray
 import Batteries.Data.Char
+import Batteries.Data.DArray
 import Batteries.Data.DList
 import Batteries.Data.Fin
 import Batteries.Data.HashMap
@@ -36,6 +37,7 @@ import Batteries.Data.Rat
 import Batteries.Data.String
 import Batteries.Data.Sum
 import Batteries.Data.UInt
+import Batteries.Data.Union
 import Batteries.Data.UnionFind
 import Batteries.Lean.AttributeExtra
 import Batteries.Lean.Delaborator
