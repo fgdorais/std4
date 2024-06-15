@@ -3,6 +3,7 @@ import Batteries.Classes.Cast
 import Batteries.Classes.Order
 import Batteries.Classes.RatCast
 import Batteries.Classes.SatisfiesM
+import Batteries.Classes.Stream
 import Batteries.CodeAction
 import Batteries.CodeAction.Attr
 import Batteries.CodeAction.Basic
